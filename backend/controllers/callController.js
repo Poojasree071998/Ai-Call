@@ -58,17 +58,17 @@ exports.handleIncomingCall = async (req, res) => {
       });
     }
 
-    // 3. Return Exotel XML to play greeting and wait
+    // 3. Return Professional Exotel Passthru XML
+    const callerId = process.env.EXOTEL_CALLER_ID || "";
     const response = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Connecting your call to a FIC agent. Please wait.</Say>
-    <Play>https://api.exotel.com/v1/Accounts/${process.env.EXOTEL_ACCOUNT_SID}/Play/ringtone.mp3</Play>
-    <Dial timeout="20">
+    <Say voice="alice">Welcome to FIC. Connecting you to an agent.</Say>
+    <Dial callerId="${callerId}" timeout="30">
         <Number>${process.env.FORWARDING_NUMBER}</Number>
     </Dial>
 </Response>`;
 
-    res.set("Content-Type", "text/xml");
+    res.set("Content-Type", "application/xml");
     res.send(response);
   } catch (err) {
     console.error('Error in handleIncomingCall:', err);
