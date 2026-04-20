@@ -12,8 +12,8 @@
     "render-build": "npm install && npm run build"
   },
   "dependencies": {
-    "@twilio/voice-sdk": "^2.18.1",
     "@google/generative-ai": "^0.21.0",
+    "exotel-webrtc-sdk": "^1.0.0",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
