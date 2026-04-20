@@ -1,0 +1,100 @@
+.toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.toast-message {
+  pointer-events: auto;
+}
+
+.toast-message {
+  min-width: 300px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-message.fade-in {
+  animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-message.fade-out {
+  animation: slideOutUp 0.3s ease-in forwards;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 1.2rem;
+}
+
+.toast-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2d3436;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #b2bec3;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+}
+
+.toast-close:hover {
+  color: #636e72;
+}
+
+/* Types */
+.toast-message.success { border-left: 4px solid #00e676; }
+.toast-message.error { border-left: 4px solid #ff4b2b; }
+.toast-message.warning { border-left: 4px solid #ffa000; }
+.toast-message.info { border-left: 4px solid #00d2ff; }
+.toast-message.demo { 
+  border-left: none;
+  background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(103, 58, 183, 0.1) 100%);
+  border: 1px solid rgba(156, 39, 176, 0.3);
+  box-shadow: 0 4px 20px rgba(156, 39, 176, 0.15);
+}
+
+.toast-message.demo .toast-text {
+  color: #7b1fa2;
+  font-weight: 700;
+}
+
+.toast-message.demo .toast-icon {
+  filter: drop-shadow(0 0 5px rgba(156, 39, 176, 0.4));
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideOutUp {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px) scale(0.95); }
+}
