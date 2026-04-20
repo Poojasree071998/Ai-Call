@@ -154,13 +154,17 @@ app.use('/api/voice',  voiceRoutes);
 
 // Static Files & Routing
 const path = require('path');
-const distPath = path.join(__dirname, '../dist');
+const distPath = path.resolve(process.cwd(), 'dist');
 
 // Serve Static Frontend Files
 app.use(express.static(distPath));
 
 // Handle React Routing - send all other requests to index.html
 app.get('*', (req, res) => {
+  // If it's an API request that wasn't caught by the routes above, return 404
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
