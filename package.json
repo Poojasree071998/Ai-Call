@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node backend/server.js",
+    "render-build": "npm install && npm run build && cd backend && npm install"
   },
   "dependencies": {
     "@twilio/voice-sdk": "^2.18.1",

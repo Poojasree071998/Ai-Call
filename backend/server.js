@@ -141,11 +141,6 @@ async function startServer() {
   }
 }
 
-// Basic Route
-app.get('/', (req, res) => {
-  res.send('AI Smart Calling System API');
-});
-
 // Import Routes
 const callRoutes  = require('./routes/callRoutes');
 const leadRoutes  = require('./routes/leadRoutes');
@@ -155,6 +150,18 @@ const voiceRoutes = require('./routes/voiceRoutes');
 app.use('/api/calls',  callRoutes);
 app.use('/api/leads',  leadRoutes);
 app.use('/api/auth',   authRoutes);
-app.use('/api/voice',  voiceRoutes);  // Twilio Browser Voice SDK endpoints
+app.use('/api/voice',  voiceRoutes);
+
+// Static Files & Routing
+const path = require('path');
+const distPath = path.join(__dirname, '../dist');
+
+// Serve Static Frontend Files
+app.use(express.static(distPath));
+
+// Handle React Routing - send all other requests to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
 
 startServer();
