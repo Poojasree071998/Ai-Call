@@ -15,15 +15,18 @@ const useExotelDevice = (agentId) => {
 
         const initExotel = async () => {
             try {
-                // We use the Exotel WebRTC SDK to connect the browser to Exotel's voice engine
-                // Note: In a real environment, you would use 'exotel-webrtc-sdk'
-                // For this implementation, we handle the WebRTC handshake through your Render server
-                console.log('🏗️ Initializing Exotel Browser Voice for Agent:', agentId);
+                console.log('🏗️ Requesting Microphone Permissions...');
+                // Force browser to ask for Mic permission
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('✅ Mic Permission Granted');
+                
+                // Keep the stream alive
+                stream.getTracks().forEach(track => track.enabled = true);
                 
                 setDeviceStatus('🟢 Exotel Browser Ready');
             } catch (err) {
-                console.error('❌ Exotel Init Error:', err);
-                setDeviceStatus('🔴 Exotel Error');
+                console.error('❌ Mic Permission Denied:', err);
+                setDeviceStatus('🔴 Mic Permission Denied');
             }
         };
 

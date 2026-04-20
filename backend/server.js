@@ -24,9 +24,8 @@ io.on('connection', (socket) => {
   
   // Exotel Audio Stream Handler (WSS)
   socket.on('exotel_stream', (data) => {
-    // Exotel sends audio in base64 format here
-    // You can process it for AI transcription
-    console.log('🎙️ [STREAM] Receiving audio packet from Exotel');
+    // Forward the live audio packet to the frontend dashboard
+    io.emit('audio_data', data);
   });
 
   socket.on('join_department', (dept) => {

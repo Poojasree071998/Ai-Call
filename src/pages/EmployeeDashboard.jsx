@@ -141,10 +141,18 @@ const EmployeeDashboard = () => {
       notifyAudioRef.current.play().catch(() => {});
     });
 
-    socket.on('call-handled', (data) => {
-      console.log('📡 [SOCKET] Call handled by another agent:', data.id);
-      setShowInboundPopup(prev => prev?.id === data.id ? null : prev);
-      fetchData(); 
+    socket.on('audio_data', (audioBase64) => {
+      if (isCalling) {
+        // Convert base64 audio to sound and play it in the browser
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0)).buffer;
+        audioCtx.decodeAudioData(arrayBuffer, (buffer) => {
+          const source = audioCtx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioCtx.destination);
+          source.start(0);
+        });
+      }
     });
 
     return () => {
