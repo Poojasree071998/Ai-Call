@@ -58,14 +58,12 @@ exports.handleIncomingCall = async (req, res) => {
       });
     }
 
-    // 3. Return Professional Exotel Passthru XML
-    const callerId = process.env.EXOTEL_CALLER_ID || "";
+    // 3. Return Exotel XML to put customer on hold while agent accepts on dashboard
     const response = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">Welcome to FIC. Connecting you to an agent.</Say>
-    <Dial callerId="${callerId}" timeout="30">
-        <Number>${process.env.FORWARDING_NUMBER}</Number>
-    </Dial>
+    <Say voice="alice">Welcome. Please wait while we connect you to our browser agent.</Say>
+    <Play>http://com.exotel.s3.amazonaws.com/softphone/ringtone.mp3</Play>
+    <Record maxLength="0" /> 
 </Response>`;
 
     res.set("Content-Type", "application/xml");
