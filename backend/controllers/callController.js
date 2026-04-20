@@ -31,37 +31,49 @@ const getExotelConfig = () => {
  * Routes the call to the browser-based dashboard using Twilio Client.
  */
 exports.handleIncomingCall = async (req, res) => {
-  const customerNumber = req.query.From || req.body.From || "Unknown Caller";
-  const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+  const customerNumber = req.query.From || req.body.From || "Unknown";
+  const callSid = req.query.CallSid || req.body.CallSid || "unknown_sid";
   
-  console.log(`🚀 [VOICE] Incoming call from ${customerNumber}. Routing to Dashboard via Twilio Client.`);
-  
-  // Use Twilio Voice Response if TWILIO_ACCOUNT_SID is present, otherwise fallback to Exotel
-  if (process.env.TWILIO_ACCOUNT_SID) {
-    const twiml = new twilio.twiml.VoiceResponse();
-    const dial = twiml.dial({
-      answerOnBridge: true,
-      timeout: 20
+  console.log(`📞 [INCOMING] New call from ${customerNumber}. Notifying Dashboard...`);
+
+  try {
+    // 1. Create Call Record
+    const newCall = await Call.create({
+      twilioSid: callSid,
+      from: customerNumber,
+      to: process.env.EXOTEL_CALLER_ID || 'System',
+      handledBy: 'Employee',
+      status: 'In-Progress',
+      department: 'General'
     });
-    dial.client('employee_default'); // Matches identity in dashboard
 
-    res.type('text/xml');
-    return res.send(twiml.toString());
-  }
+    // 2. Notify all agents via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('incoming-call', {
+        id: newCall._id,
+        from: customerNumber,
+        callSid: callSid,
+        timestamp: new Date()
+      });
+    }
 
-  // Fallback to Exotel Bridging (old method)
-  const agentNumber = process.env.FORWARDING_NUMBER;
-  const callerId = process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER;
-  
-  const response = `<?xml version="1.0" encoding="UTF-8"?>
+    // 3. Return Exotel XML to play greeting and wait
+    const response = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Dial callerId="${callerId}">
-        <Number>${agentNumber}</Number>
+    <Say>Connecting your call to a FIC agent. Please wait.</Say>
+    <Play>https://api.exotel.com/v1/Accounts/${process.env.EXOTEL_ACCOUNT_SID}/Play/ringtone.mp3</Play>
+    <Dial timeout="20">
+        <Number>${process.env.FORWARDING_NUMBER}</Number>
     </Dial>
 </Response>`;
 
-  res.set("Content-Type", "text/xml");
-  res.send(response);
+    res.set("Content-Type", "text/xml");
+    res.send(response);
+  } catch (err) {
+    console.error('Error in handleIncomingCall:', err);
+    res.status(500).send('Error');
+  }
 };
 
 exports.handleMenuSelection = async (req, res) => {

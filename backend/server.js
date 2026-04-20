@@ -22,6 +22,13 @@ const PORT = process.env.PORT || 5050;
 io.on('connection', (socket) => {
   console.log('📡 [SOCKET] A user connected:', socket.id);
   
+  // Exotel Audio Stream Handler (WSS)
+  socket.on('exotel_stream', (data) => {
+    // Exotel sends audio in base64 format here
+    // You can process it for AI transcription
+    console.log('🎙️ [STREAM] Receiving audio packet from Exotel');
+  });
+
   socket.on('join_department', (dept) => {
     socket.join(`room_${dept}`);
     console.log(`📡 [SOCKET] User ${socket.id} joined Quad: room_${dept}`);
