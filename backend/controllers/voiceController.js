@@ -134,15 +134,3 @@ exports.handleRecordingStatus = async (req, res) => {
 
   res.status(200).send('OK');
 };
-
-/**
- * Fetch Exotel SIP Credentials for WebRTC
- */
-exports.getExotelCredentials = (req, res) => {
-  res.json({
-    host: process.env.EXOTEL_WEBRTC_HOST || 'sip.exotel.com',
-    username: process.env.EXOTEL_SIP_USERNAME || 'demo_sip_user',
-    password: process.env.EXOTEL_SIP_PASSWORD || 'demo_sip_pass',
-    port: 5062 // default wss port
-  });
-};

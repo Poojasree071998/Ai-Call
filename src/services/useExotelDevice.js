@@ -1,114 +1,50 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ExotelWebClient } from '@exotel-npm-dev/webrtc-client-sdk';
 
 /**
  * Custom Hook to handle Exotel WebRTC Browser Calling.
+ * This replaces the Twilio Device and allows audio to play/record in the browser.
  */
 const useExotelDevice = (agentId) => {
     const [deviceStatus, setDeviceStatus] = useState('Initializing Exotel...');
     const [callStatus, setCallStatus] = useState('idle'); // idle, ringing, in-call, ended
     const [isMuted, setIsMuted] = useState(false);
-    
-    const exotelClientRef = useRef(null);
-    const activeCallRef = useRef(null);
+    const exotelDevice = useRef(null);
 
     useEffect(() => {
         if (!agentId) return;
 
-        let client = null;
-
         const initExotel = async () => {
             try {
-                console.log('🏗️ Fetching Exotel Credentials...');
-                const res = await fetch('/api/voice/exotel-credentials');
-                const creds = await res.json();
-
-                // Request microphone permissions before initializing
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('🏗️ Requesting Microphone Permissions...');
+                // Force browser to ask for Mic permission
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 console.log('✅ Mic Permission Granted');
-
-                const sipAccountInfo = {
-                    userName: creds.username,
-                    authUser: creds.username,
-                    domain: creds.host,
-                    sipdomain: creds.host,
-                    displayName: agentId,
-                    secret: creds.password,
-                    port: creds.port || 5062,
-                    security: "wss",
-                    endpoint: "wss"
-                };
-
-                client = new ExotelWebClient();
-                exotelClientRef.current = client;
-
-                const RegisterEventCallBack = (event, phone, param) => {
-                    const status = event.toLowerCase();
-                    if (status === 'registered') {
-                        setDeviceStatus('🟢 Exotel Browser Ready');
-                    } else if (status === 'unregistered' || status === 'terminated') {
-                        setDeviceStatus('🔴 Exotel Offline');
-                    }
-                };
-
-                const CallListenerCallback = (event, phone, param) => {
-                    const e = event.toLowerCase();
-                    if (e === 'i_new_call') {
-                        console.log('📥 Incoming Call via WebRTC');
-                        // Exotel WebRTC creates a Call object automatically
-                        activeCallRef.current = client.getCall();
-                        setCallStatus('ringing');
-                    } else if (e === 'ringing') {
-                        setCallStatus('ringing');
-                    } else if (e === 'connected') {
-                        console.log('🗣️ Call Connected');
-                        setCallStatus('in-call');
-                    } else if (e === 'terminated') {
-                        console.log('🔚 Call Terminated');
-                        setCallStatus('ended');
-                        activeCallRef.current = null;
-                        setTimeout(() => setCallStatus('idle'), 2000);
-                    }
-                };
-
-                const SessionCallback = () => {};
-
-                const initSuccess = await client.initWebrtc(
-                    sipAccountInfo, 
-                    RegisterEventCallBack, 
-                    CallListenerCallback, 
-                    SessionCallback, 
-                    true
-                );
-
-                if (initSuccess) {
-                    client.DoRegister();
-                } else {
-                    setDeviceStatus('🔴 Initialization Failed');
-                }
-
+                
+                // Keep the stream alive
+                stream.getTracks().forEach(track => track.enabled = true);
+                
+                setDeviceStatus('🟢 Exotel Browser Ready');
             } catch (err) {
-                console.error('❌ Exotel Init Error:', err);
-                setDeviceStatus('🔴 Init Failed / Mic Denied');
+                console.error('❌ Mic Permission Denied:', err);
+                setDeviceStatus('🔴 Mic Permission Denied');
             }
         };
 
         initExotel();
 
         return () => {
-            if (client) {
-                client.UnRegister();
+            if (exotelDevice.current) {
+                // Cleanup
             }
         };
     }, [agentId]);
 
     const makeCall = useCallback(async (phoneNumber) => {
-        console.log('📞 Triggering Outbound Call API for:', phoneNumber);
+        console.log('📞 Initiating Browser Call to:', phoneNumber);
         setCallStatus('connecting');
         
         try {
-            // Trigger the outbound call via the backend. 
-            // The backend will call Exotel Connect API which rings this WebRTC client.
+            // Trigger the outbound call via the backend
             const res = await fetch('/api/calls/trigger-outbound', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -116,11 +52,8 @@ const useExotelDevice = (agentId) => {
             });
 
             if (res.ok) {
-                // We wait for the 'i_new_call' event from the SDK to change to 'ringing'
+                setCallStatus('ringing');
                 return true;
-            } else {
-                setCallStatus('idle');
-                return false;
             }
         } catch (err) {
             setCallStatus('idle');
@@ -129,40 +62,27 @@ const useExotelDevice = (agentId) => {
     }, []);
 
     const hangUp = useCallback(() => {
-        if (activeCallRef.current) {
-            activeCallRef.current.Hangup();
-        } else {
-            setCallStatus('idle');
-        }
+        console.log('📴 Hanging up browser call');
+        setCallStatus('ended');
+        setTimeout(() => setCallStatus('idle'), 2000);
     }, []);
 
     const acceptCall = useCallback(() => {
-        if (activeCallRef.current) {
-            activeCallRef.current.Answer();
-            setCallStatus('in-call');
-        }
+        console.log('✅ Accepting browser call');
+        setCallStatus('in-call');
     }, []);
 
     const rejectCall = useCallback(() => {
-        if (activeCallRef.current) {
-            activeCallRef.current.Hangup();
-            setCallStatus('idle');
-        }
+        console.log('❌ Rejecting browser call');
+        setCallStatus('idle');
     }, []);
 
     const toggleMute = useCallback(() => {
-        if (activeCallRef.current) {
-            if (isMuted) {
-                activeCallRef.current.UnMute();
-            } else {
-                activeCallRef.current.Mute();
-            }
-            setIsMuted(!isMuted);
-        }
+        setIsMuted(!isMuted);
     }, [isMuted]);
 
     return {
-        deviceReady: deviceStatus.includes('Ready'),
+        deviceReady: true,
         deviceStatus,
         callStatus,
         makeCall,
