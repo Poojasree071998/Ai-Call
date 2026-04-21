@@ -1,0 +1,193 @@
+.dialpad-wrapper.glass-card-premium {
+  background: var(--bg-secondary-glass, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  padding: 30px;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dialpad-display {
+  display: flex;
+  align-items: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dialpad-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.dialpad-input::placeholder {
+  color: var(--text-muted);
+  font-size: 1rem;
+  letter-spacing: normal;
+}
+
+.dialpad-backspace {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.dialpad-backspace:hover:not(:disabled) {
+  color: var(--danger);
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.dialpad-backspace:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dialpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.dialpad-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.dialpad-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.15);
+}
+
+.dialpad-btn:active, .dialpad-btn.active {
+  transform: translateY(0) scale(0.9);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--accent-primary-alpha);
+}
+
+.dialpad-btn.active .dialpad-num, .dialpad-btn.active .dialpad-letters {
+  color: white;
+}
+
+.dialpad-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.dialpad-letters {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dialpad-call-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btn-dialpad-call {
+  background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 16px 40px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 8px 15px rgba(0, 176, 155, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-dialpad-call:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 20px rgba(0, 176, 155, 0.4);
+}
+
+.btn-dialpad-call:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-dialpad-call:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(1);
+}
+
+.btn-clear-all {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.btn-clear-all:hover {
+  color: var(--danger);
+}
+
+.call-icon {
+  font-size: 1.4rem;
+  animation: shake 2s infinite;
+}
+
+@keyframes shake {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(-10deg); }
+  20% { transform: rotate(10deg); }
+  30% { transform: rotate(-10deg); }
+  40% { transform: rotate(10deg); }
+  50% { transform: rotate(0); }
+  100% { transform: rotate(0); }
+}

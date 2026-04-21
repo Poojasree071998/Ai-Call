@@ -7,6 +7,7 @@ import HistoryTab from '../components/employee/HistoryTab';
 import ProfileTab from '../components/employee/ProfileTab';
 import InboundCallPopup from '../components/employee/InboundCallPopup';
 import TransferModal from '../components/employee/TransferModal';
+import Dialpad from '../components/employee/Dialpad';
 import Toast from '../components/common/Toast';
 import { io } from 'socket.io-client';
 import useExotelDevice from '../services/useExotelDevice';
@@ -410,6 +411,7 @@ const EmployeeDashboard = () => {
         <div className="sidebar-logo">FIC <span>SC</span></div>
         <nav>
           <button className={activeTab === 'queue' ? 'active' : ''} onClick={() => setActiveTab('queue')}>📥 My Queue</button>
+          <button className={activeTab === 'dialer' ? 'active' : ''} onClick={() => setActiveTab('dialer')}>🔢 Dial Pad</button>
           <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>🕒 My History</button>
           <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>👤 Profile</button>
         </nav>
@@ -473,6 +475,20 @@ const EmployeeDashboard = () => {
                   sentiment={sentiment}
                   suggestions={suggestions}
                 />;
+              case 'dialer':
+                return (
+                  <div className="content-card card glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+                    <div style={{ width: '100%', maxWidth: '400px' }}>
+                      <h2 style={{ textAlign: 'center', marginBottom: '30px', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Quick Dialer</h2>
+                      <Dialpad 
+                        dialNumber={dialNumber} 
+                        setDialNumber={setDialNumber} 
+                        handleManualCall={handleManualCall} 
+                        isLoading={isLoading} 
+                      />
+                    </div>
+                  </div>
+                );
               case 'history': return <HistoryTab callHistory={callHistory} />;
               case 'profile': return <ProfileTab currentUser={currentUser} />;
               default: return <div>Select a tab</div>;

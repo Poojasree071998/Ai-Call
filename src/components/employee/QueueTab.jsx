@@ -1,3 +1,6 @@
+import React from 'react';
+import Dialpad from './Dialpad';
+
 const QueueTab = ({ 
   incomingCalls, 
   filteredCalls, 
@@ -142,9 +145,13 @@ const QueueTab = ({
               {deviceReady ? '🟢' : '🟠'} {deviceStatus}
             </p>
             
-            <div className="quick-dial-box">
-              <input type="text" placeholder="Direct Dial Number..." value={dialNumber} onChange={(e) => setDialNumber(e.target.value)} />
-              <button className="btn-dial-main" onClick={handleManualCall} disabled={isLoading}>📞 Start Call</button>
+            <div style={{ marginTop: '30px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <Dialpad 
+                dialNumber={dialNumber} 
+                setDialNumber={setDialNumber} 
+                handleManualCall={handleManualCall} 
+                isLoading={isLoading} 
+              />
             </div>
           </div>
         )}
