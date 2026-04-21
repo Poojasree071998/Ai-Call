@@ -256,8 +256,20 @@ exports.triggerOutboundCall = async (req, res) => {
       });
     }
 
-    // Fallback: Exotel Bridging Logic
-    const employeePhone = (process.env.FORWARDING_NUMBER || '').trim();
+    // Fallback: Exotel Bridging Logic (Mobile OR WebRTC)
+    let employeePhone = (process.env.FORWARDING_NUMBER || '').trim();
+    
+    // If frontend requests WebRTC, dial the SIP endpoint instead of the mobile phone
+    if (req.body.mode === 'webrtc' && process.env.EXOTEL_SIP_USERNAME) {
+      const sipUser = process.env.EXOTEL_SIP_USERNAME.trim();
+      // Exotel requires 'sip:username@domain' or just 'username' depending on account settings.
+      // The safest way is usually just the username if it's an internal SIP device, 
+      // but if the API requires the full URI: sip:user@domain. 
+      // Exotel generally accepts the SIP username directly if it's an agent endpoint.
+      employeePhone = sipUser; 
+      console.log(`🚀 [WEBRTC MODE] Dialing SIP Endpoint: ${employeePhone}`);
+    }
+
     const exotelVirtualNumber = (process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER || "").trim();
     const accountSid = (process.env.EXOTEL_ACCOUNT_SID || "").trim();
     const apiKey = (process.env.EXOTEL_API_KEY || "").trim();
@@ -369,7 +381,13 @@ exports.attendCall = async (req, res) => {
       }
       const exotelVirtualNumber = (process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER || '').trim();
       const customerPhoneClean = call.from.trim();
-      const employeePhoneClean = employee.phone.trim();
+      let employeePhoneClean = employee.phone.trim();
+      
+      // If WebRTC is configured, use the SIP endpoint so it rings the browser instead of the mobile
+      if (process.env.EXOTEL_SIP_USERNAME) {
+        employeePhoneClean = process.env.EXOTEL_SIP_USERNAME.trim();
+        console.log(`🚀 [WEBRTC MODE] Bridging incoming call to SIP Endpoint: ${employeePhoneClean}`);
+      }
 
       // The bridge callback URL: called by Exotel after agent answers,
       // returns XML that dials the customer into the call.
