@@ -116,30 +116,73 @@ const Dialpad = ({
         </button>
       )}
 
-      {/* Active Call Overlay */}
+      {/* Active Call UI */}
       {isCalling && (
-        <div className="active-call-overlay glass-card-premium">
-          <div className="active-call-pulse-bg"></div>
-          
-          <div className="active-call-content">
+        <div className="active-call-ui">
+          <div className="active-call-header">
             <div className="status-badge-live">
               <div className="dot"></div> LIVE CALL
             </div>
-            
-            <div className="caller-id">
-              <h3>{activeCall?.from || dialNumber}</h3>
-              <p>{deviceStatus}</p>
-            </div>
-            
-            <div className="call-timer-large">
+            <div className="call-timer-header">
               {callDuration || '00:00'}
             </div>
-            
-            <button className="btn-hangup-circle" onClick={handleEndCall}>
-              <Phone size={32} style={{ transform: 'rotate(135deg)' }} fill="currentColor" />
+          </div>
+          
+          <div className="active-call-avatar">
+            <div className="avatar-square">1</div>
+          </div>
+          
+          <h2 className="active-call-number">{activeCall?.from || dialNumber}</h2>
+          
+          <p className="active-call-status">
+            Outbound Dial • <span className="icon-mobile">📱</span> {deviceStatus || 'Ringing Customer...'}
+          </p>
+          
+          <div className="sentiment-section">
+            <div className="sentiment-labels">
+              <span className="label-bold">Customer Sentiment</span>
+              <span className="label-bold">Neutral</span>
+            </div>
+            <div className="sentiment-bar-container">
+              <div className="sentiment-bar-fill" style={{ width: '40%' }}></div>
+            </div>
+          </div>
+          
+          <div className="call-actions-grid">
+            <div className="action-column">
+              <span className="action-label">Disposition</span>
+              <button className="action-btn select-btn">
+                Inter.. <span>v</span>
+              </button>
+            </div>
+            <div className="action-column">
+              <span className="action-label">Actions</span>
+              <div className="action-buttons-row">
+                <button className="action-btn">
+                  <span className="icon">⏸</span> Hold
+                </button>
+                <button className="action-btn">
+                  <span className="icon">🚀</span> Transfer
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="insights-section">
+            <span className="action-label">Call Insights & AI Logs</span>
+            <textarea 
+              className="insights-textarea" 
+              placeholder="Start typing call insights..."
+            ></textarea>
+          </div>
+          
+          <div className="bottom-action-buttons">
+            <button className="btn-hangup-large" onClick={handleEndCall}>
+              HANG<br/>UP
             </button>
-            
-            <p className="hangup-label">End Call</p>
+            <button className="btn-save-close">
+              SAVE<br/>&<br/>CLOSE<br/>LEAD
+            </button>
           </div>
         </div>
       )}
