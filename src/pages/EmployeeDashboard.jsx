@@ -486,6 +486,11 @@ const EmployeeDashboard = () => {
                         setDialNumber={setDialNumber} 
                         handleManualCall={handleManualCall} 
                         isLoading={isLoading} 
+                        isCalling={isCalling}
+                        activeCall={activeCall}
+                        deviceStatus={deviceStatus}
+                        callDuration={formatTime(seconds)}
+                        handleEndCall={handleEndCall}
                       />
                     </div>
                   </div>

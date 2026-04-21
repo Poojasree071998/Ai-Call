@@ -1,18 +1,29 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
+import { Phone } from 'lucide-react';
 import './Dialpad.css';
 
-const Dialpad = ({ dialNumber, setDialNumber, handleManualCall, isLoading }) => {
+const Dialpad = ({ 
+  dialNumber, 
+  setDialNumber, 
+  handleManualCall, 
+  isLoading,
+  isCalling,
+  activeCall,
+  deviceStatus,
+  callDuration,
+  handleEndCall
+}) => {
+  const [activeButton, setActiveButton] = useState(null);
+
   const handleDigitClick = useCallback((digit) => {
     setDialNumber((prev) => (prev.length < 15 ? prev + digit : prev));
+    setActiveButton(digit);
+    setTimeout(() => setActiveButton(null), 150);
   }, [setDialNumber]);
 
   const handleBackspace = useCallback(() => {
     setDialNumber((prev) => prev.slice(0, -1));
   }, [setDialNumber]);
-
-  const handleClear = () => {
-    setDialNumber('');
-  };
 
   // Keyboard Support
   useEffect(() => {
@@ -33,18 +44,18 @@ const Dialpad = ({ dialNumber, setDialNumber, handleManualCall, isLoading }) => 
   }, [handleDigitClick, handleBackspace, handleManualCall, dialNumber]);
 
   const digits = [
-    { num: '1', letters: '' },
-    { num: '2', letters: 'ABC' },
-    { num: '3', letters: 'DEF' },
-    { num: '4', letters: 'GHI' },
-    { num: '5', letters: 'JKL' },
-    { num: '6', letters: 'MNO' },
-    { num: '7', letters: 'PQRS' },
-    { num: '8', letters: 'TUV' },
-    { num: '9', letters: 'WXYZ' },
-    { num: '*', letters: '' },
-    { num: '0', letters: '+' },
-    { num: '#', letters: '' },
+    { num: '1', sub: '' },
+    { num: '2', sub: 'ABC' },
+    { num: '3', sub: 'DEF' },
+    { num: '4', sub: 'GHI' },
+    { num: '5', sub: 'JKL' },
+    { num: '6', sub: 'MNO' },
+    { num: '7', sub: 'PQRS' },
+    { num: '8', sub: 'TUV' },
+    { num: '9', sub: 'WXYZ' },
+    { num: '*', sub: '' },
+    { num: '0', sub: '+' },
+    { num: '#', sub: '' },
   ];
 
   return (
@@ -57,45 +68,81 @@ const Dialpad = ({ dialNumber, setDialNumber, handleManualCall, isLoading }) => 
           placeholder="Enter Number..." 
           className="dialpad-input"
           maxLength={15}
+          disabled={isCalling}
         />
-        {dialNumber && (
+        {dialNumber && !isCalling && (
           <button className="dialpad-backspace" onClick={handleBackspace} title="Backspace">
             ⌫
           </button>
         )}
       </div>
       
+      {/* Keypad */}
       <div className="dialpad-grid">
-        {digits.map((item, idx) => (
-          <button 
-            key={idx} 
-            className="dialpad-btn" 
-            onClick={() => handleDigitClick(item.num)}
-            onMouseDown={(e) => e.currentTarget.classList.add('active')}
-            onMouseUp={(e) => e.currentTarget.classList.remove('active')}
-            onMouseLeave={(e) => e.currentTarget.classList.remove('active')}
+        {digits.map((digit) => (
+          <button
+            key={digit.num}
+            className={`dialpad-btn ${activeButton === digit.num ? 'active' : ''}`}
+            onClick={() => handleDigitClick(digit.num)}
+            disabled={isLoading || isCalling}
           >
-            <span className="dialpad-num">{item.num}</span>
-            <span className="dialpad-letters">{item.letters || '\u00A0'}</span>
+            <span className="dialpad-num">{digit.num}</span>
+            <span className="dialpad-letters">{digit.sub || '\u00A0'}</span>
           </button>
         ))}
       </div>
 
-      <div className="dialpad-call-action">
+      {/* Action Buttons */}
+      <div className="dialpad-actions">
         <button 
           className="btn-dialpad-call" 
           onClick={handleManualCall} 
-          disabled={isLoading || !dialNumber}
+          disabled={!dialNumber || isLoading || isCalling}
         >
-          <span className="call-icon">📞</span>
-          {isLoading ? 'Connecting...' : 'Call Now'}
+          {isLoading ? (
+            <span className="loading-spinner-sm"></span>
+          ) : (
+            <>
+              <Phone className="call-icon" size={20} fill="currentColor" />
+              <span>Call Now</span>
+            </>
+          )}
         </button>
-        {dialNumber && (
-          <button className="btn-clear-all" onClick={handleClear}>
-            Clear
-          </button>
-        )}
       </div>
+
+      {dialNumber && !isLoading && !isCalling && (
+        <button className="btn-clear-all" onClick={() => setDialNumber('')}>
+          Clear All
+        </button>
+      )}
+
+      {/* Active Call Overlay */}
+      {isCalling && (
+        <div className="active-call-overlay glass-card-premium">
+          <div className="active-call-pulse-bg"></div>
+          
+          <div className="active-call-content">
+            <div className="status-badge-live">
+              <div className="dot"></div> LIVE CALL
+            </div>
+            
+            <div className="caller-id">
+              <h3>{activeCall?.from || dialNumber}</h3>
+              <p>{deviceStatus}</p>
+            </div>
+            
+            <div className="call-timer-large">
+              {callDuration || '00:00'}
+            </div>
+            
+            <button className="btn-hangup-circle" onClick={handleEndCall}>
+              <Phone size={32} style={{ transform: 'rotate(135deg)' }} fill="currentColor" />
+            </button>
+            
+            <p className="hangup-label">End Call</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
