@@ -468,10 +468,10 @@ exports.bridgeOutboundXML = async (req, res) => {
   // No hold music — direct dial so customer starts ringing immediately
   const response = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Dial callerId="${callerId}" record="true" timeout="30">
-        <Number>${customer}</Number>
-    </Dial>
+    <Dial callerId="${callerId || ''}" record="true" timeout="30">${customer}</Dial>
 </Response>`;
+
+  console.log(`📡 [EXOTEL XML RESPONSE]:\n${response}`);
 
   // Notify dashboard that the bridge is active (Agent has picked up)
   const io = req.app.get('io');
