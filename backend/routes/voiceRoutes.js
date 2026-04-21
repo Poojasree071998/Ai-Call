@@ -15,4 +15,7 @@ router.get('/webhook',  voiceController.handleVoiceWebhook); // fallback
 router.post('/call-status',      voiceController.handleCallStatus);
 router.post('/recording-status', voiceController.handleRecordingStatus);
 
+// Exotel WebRTC credentials
+router.get('/exotel-credentials', voiceController.getExotelCredentials);
+
 module.exports = router;
