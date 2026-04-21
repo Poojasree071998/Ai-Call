@@ -49,7 +49,8 @@ const EmployeeDashboard = () => {
     acceptCall, 
     rejectCall, 
     toggleMute, 
-    isMuted 
+    isMuted,
+    setCallStatus
   } = useExotelDevice(currentUser?.id);
 
   // Track whether current call is a real Exotel call or demo mode
@@ -140,6 +141,25 @@ const EmployeeDashboard = () => {
       console.log('📡 [SOCKET] New call assignment detected:', callData);
       setShowInboundPopup(callData);
       notifyAudioRef.current.play().catch(() => {});
+    });
+
+    socket.on('call-live', (data) => {
+      console.log('📡 [SOCKET] Call is now LIVE:', data);
+      setIsCalling(true);
+      setCallStatus('in-call');
+      setDeviceStatus(data.status || '🟢 Two-Way Audio Live');
+      addToast('🟢 Call Connected!', 'success');
+    });
+
+    socket.on('call-status-updated', (data) => {
+      console.log('📡 [SOCKET] Call status updated:', data);
+      if (data.status === 'Completed' || data.status === 'Missed') {
+        setIsCalling(false);
+        setCallStatus('idle');
+        setActiveCall(null);
+        setDeviceStatus('Exotel Browser Ready');
+        addToast(`📴 Call ${data.status}`, 'info');
+      }
     });
 
     socket.on('audio_data', (audioBase64) => {

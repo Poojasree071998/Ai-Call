@@ -90,7 +90,8 @@ const useExotelDevice = (agentId) => {
         acceptCall,
         rejectCall,
         toggleMute,
-        isMuted
+        isMuted,
+        setCallStatus
     };
 };
 

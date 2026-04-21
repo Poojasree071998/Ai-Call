@@ -301,7 +301,7 @@ exports.updateStatus = async (req, res) => {
 };
 
 exports.handleStatusCallback = async (req, res) => {
-  const { CallSid, Status } = req.query;
+  const { CallSid, Status } = { ...req.query, ...req.body };
   console.log(`📡 [EXOTEL STATUS] Call ${CallSid}: ${Status}`);
 
   try {
@@ -462,6 +462,16 @@ exports.bridgeOutboundXML = async (req, res) => {
         <Number>${customer}</Number>
     </Dial>
 </Response>`;
+
+  // Notify dashboard that the bridge is active (Agent has picked up)
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('call-live', { 
+      customer, 
+      status: '🟢 Two-Way Audio Live',
+      timestamp: new Date() 
+    });
+  }
 
   res.set('Content-Type', 'text/xml');
   res.send(response);

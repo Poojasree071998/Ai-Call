@@ -7,7 +7,7 @@ router.get('/incoming', callController.handleIncomingCall); // Exotel defaults
 router.post('/incoming', callController.handleIncomingCall); // Some configs use POST
 router.get('/menu-selection', callController.handleMenuSelection);
 router.get('/end-call', callController.handleEndCall);
-router.get('/status', callController.handleStatusCallback);
+router.all('/status', callController.handleStatusCallback);
 router.post('/purge', callController.purgeCalls);
 
 // Dashboard API
