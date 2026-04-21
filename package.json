@@ -12,6 +12,7 @@
     "render-build": "npm install && npm run build"
   },
   "dependencies": {
+    "@exotel-npm-dev/webrtc-client-sdk": "^3.0.10",
     "@google/generative-ai": "^0.21.0",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
@@ -27,7 +28,8 @@
     "react-router-dom": "^7.14.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.3",
-    "twilio": "^5.4.0"
+    "twilio": "^5.4.0",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
