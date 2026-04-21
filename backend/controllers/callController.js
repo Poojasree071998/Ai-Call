@@ -277,10 +277,11 @@ exports.triggerOutboundCall = async (req, res) => {
     const url = `https://api.exotel.com/v1/Accounts/${accountSid}/Calls/connect.json`;
     const params = new URLSearchParams();
     params.append('From', employeePhone);
-    params.append('To', customerPhoneClean);
     params.append('CallerId', exotelVirtualNumber);
     params.append('Url', bridgeCallbackUrl);
     params.append('StatusCallback', `${baseUrl}/api/calls/status`);
+    params.append('TimeLimit', '3600'); // Max call duration 1 hour
+    params.append('TimeOut', '60');    // Ring for 60 seconds
 
     const response = await axios.post(url, params, getExotelConfig());
     const callSid = response.data.Call?.Sid || response.data?.Sid;
@@ -378,10 +379,10 @@ exports.attendCall = async (req, res) => {
       const url = `https://api.exotel.com/v1/Accounts/${process.env.EXOTEL_ACCOUNT_SID}/Calls/connect.json`;
       const params = new URLSearchParams();
       params.append('From', employeePhoneClean);       // Exotel calls the employee first
-      params.append('To', customerPhoneClean);         // Then connects to customer after agent answers
       params.append('CallerId', exotelVirtualNumber);  // Virtual number shown to customer
       params.append('Url', bridgeCallbackUrl);         // ← THE KEY: XML bridge callback
       params.append('StatusCallback', `${baseUrl}/api/calls/status`);
+      params.append('TimeOut', '60');
 
       console.log(`📡 [EXOTEL ATTEND] Calling agent ${employeePhoneClean}, bridge to customer ${customerPhoneClean}`);
       console.log(`📡 [EXOTEL ATTEND] Bridge URL: ${bridgeCallbackUrl}`);
@@ -466,9 +467,10 @@ exports.bridgeOutboundXML = async (req, res) => {
   console.log(`✅ [EXOTEL XML BRIDGE] Agent picked up! Bridging to Customer: ${customer} via CallerID: ${callerId}`);
 
   // No hold music — direct dial so customer starts ringing immediately
+  // Optimized Passthru XML for Exotel
   const response = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Dial callerId="${callerId || ''}" record="true" timeout="30">${customer}</Dial>
+    <Dial callerId="${callerId || ''}" record="true" timeout="60">${customer}</Dial>
 </Response>`;
 
   console.log(`📡 [EXOTEL XML RESPONSE]:\n${response}`);
