@@ -1,4 +1,6 @@
 .dialpad-wrapper.glass-card-premium {
+  position: relative;
+  overflow: hidden;
   background: var(--bg-secondary-glass, rgba(255, 255, 255, 0.05));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
