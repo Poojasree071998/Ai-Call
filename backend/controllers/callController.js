@@ -216,8 +216,8 @@ exports.getActiveCalls = async (req, res) => {
 exports.triggerOutboundCall = async (req, res) => {
   try {
     const { customerPhone } = req.body;
-    const customerPhoneClean = customerPhone.replace('+', '');
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    // Exotel recommends using E.164 format (+91...) so we do NOT strip the '+'
+    const customerPhoneClean = customerPhone.trim();
     const host = req.get('host');
     let baseUrl = (process.env.BASE_URL || '').trim();
     if (!baseUrl || baseUrl.includes('ngrok')) {
@@ -257,7 +257,7 @@ exports.triggerOutboundCall = async (req, res) => {
     }
 
     // Fallback: Exotel Bridging Logic
-    const employeePhone = (process.env.FORWARDING_NUMBER || '').replace('+', '');
+    const employeePhone = (process.env.FORWARDING_NUMBER || '').trim();
     const exotelVirtualNumber = (process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER || "").trim();
     const accountSid = (process.env.EXOTEL_ACCOUNT_SID || "").trim();
     const apiKey = (process.env.EXOTEL_API_KEY || "").trim();
@@ -368,8 +368,8 @@ exports.attendCall = async (req, res) => {
         baseUrl = `${protocol}://${host}`;
       }
       const exotelVirtualNumber = (process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER || '').trim();
-      const customerPhoneClean = call.from.replace('+', '');
-      const employeePhoneClean = employee.phone.replace('+', '');
+      const customerPhoneClean = call.from.trim();
+      const employeePhoneClean = employee.phone.trim();
 
       // The bridge callback URL: called by Exotel after agent answers,
       // returns XML that dials the customer into the call.
