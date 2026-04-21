@@ -216,6 +216,7 @@ exports.getActiveCalls = async (req, res) => {
 exports.triggerOutboundCall = async (req, res) => {
   try {
     const { customerPhone } = req.body;
+    const customerPhoneClean = customerPhone.replace('+', '');
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host');
     let baseUrl = (process.env.BASE_URL || '').trim();
