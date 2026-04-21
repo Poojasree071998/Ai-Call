@@ -216,9 +216,13 @@ exports.getActiveCalls = async (req, res) => {
 exports.triggerOutboundCall = async (req, res) => {
   try {
     const { customerPhone } = req.body;
-    const customerPhoneClean = customerPhone.replace('+', '');
-    const baseUrl = (process.env.BASE_URL || '').trim();
-    
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    let baseUrl = (process.env.BASE_URL || '').trim();
+    if (!baseUrl || baseUrl.includes('ngrok')) {
+      baseUrl = `${protocol}://${host}`;
+    }
+
     // 1. Create Call Record in Database for tracking
     const newCall = await Call.create({
       twilioSid: 'pending_' + Date.now(),
@@ -356,7 +360,12 @@ exports.attendCall = async (req, res) => {
     }
 
     try {
-      const baseUrl = (process.env.BASE_URL || '').trim();
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.get('host');
+      let baseUrl = (process.env.BASE_URL || '').trim();
+      if (!baseUrl || baseUrl.includes('ngrok')) {
+        baseUrl = `${protocol}://${host}`;
+      }
       const exotelVirtualNumber = (process.env.EXOTEL_CALLER_ID || process.env.EXOTEL_VIRTUAL_NUMBER || '').trim();
       const customerPhoneClean = call.from.replace('+', '');
       const employeePhoneClean = employee.phone.replace('+', '');
