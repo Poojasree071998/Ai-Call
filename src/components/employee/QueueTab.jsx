@@ -26,7 +26,8 @@ const QueueTab = ({
   callDuration,
   sentiment,
   suggestions,
-  deviceReady
+  deviceReady,
+  setActiveTab
 }) => {
   return (
     <div className={`queue-layout ${isCalling ? 'war-room' : 'standard'}`}>
@@ -145,13 +146,15 @@ const QueueTab = ({
               {deviceReady ? '🟢' : '🟠'} {deviceStatus}
             </p>
             
-            <div style={{ marginTop: '30px', width: '100%', display: 'flex', justifyContent: 'center' }}>
-              <Dialpad 
-                dialNumber={dialNumber} 
-                setDialNumber={setDialNumber} 
-                handleManualCall={handleManualCall} 
-                isLoading={isLoading} 
-              />
+            <div style={{ marginTop: '30px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+              <p style={{ fontSize: '0.9rem', opacity: 0.7 }}>Need to make a manual call?</p>
+              <button 
+                className="btn-dial-main" 
+                onClick={() => setActiveTab('dialer')} 
+                style={{ width: 'auto', padding: '12px 30px' }}
+              >
+                🔢 Open Dial Pad
+              </button>
             </div>
           </div>
         )}

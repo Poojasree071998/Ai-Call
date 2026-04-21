@@ -474,6 +474,7 @@ const EmployeeDashboard = () => {
                   callDuration={formatTime(seconds)}
                   sentiment={sentiment}
                   suggestions={suggestions}
+                  setActiveTab={setActiveTab}
                 />;
               case 'dialer':
                 return (
