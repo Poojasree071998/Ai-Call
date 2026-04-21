@@ -14,6 +14,8 @@ const Dialpad = ({
   handleEndCall
 }) => {
   const [activeButton, setActiveButton] = useState(null);
+  const [disposition, setDisposition] = useState('Interested');
+  const [notes, setNotes] = useState('');
 
   const handleDigitClick = useCallback((digit) => {
     setDialNumber((prev) => (prev.length < 15 ? prev + digit : prev));
@@ -151,9 +153,18 @@ const Dialpad = ({
           <div className="call-actions-grid">
             <div className="action-column">
               <span className="action-label">Disposition</span>
-              <button className="action-btn select-btn">
-                Inter.. <span>v</span>
-              </button>
+              <select 
+                className="action-btn select-btn" 
+                value={disposition}
+                onChange={(e) => setDisposition(e.target.value)}
+                style={{ appearance: 'auto', WebkitAppearance: 'auto', MozAppearance: 'auto' }}
+              >
+                <option value="Interested">Interested</option>
+                <option value="Not Interested">Not Interested</option>
+                <option value="Call Back">Call Back</option>
+                <option value="No Answer">No Answer</option>
+                <option value="Invalid Number">Invalid Number</option>
+              </select>
             </div>
             <div className="action-column">
               <span className="action-label">Actions</span>
@@ -173,14 +184,16 @@ const Dialpad = ({
             <textarea 
               className="insights-textarea" 
               placeholder="Start typing call insights..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             ></textarea>
           </div>
           
           <div className="bottom-action-buttons">
-            <button className="btn-hangup-large" onClick={handleEndCall}>
+            <button className="btn-hangup-large" onClick={() => handleEndCall()}>
               HANG<br/>UP
             </button>
-            <button className="btn-save-close">
+            <button className="btn-save-close" onClick={() => handleEndCall({ disposition, notes })}>
               SAVE<br/>&<br/>CLOSE<br/>LEAD
             </button>
           </div>
