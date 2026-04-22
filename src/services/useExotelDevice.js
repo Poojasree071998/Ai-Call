@@ -111,7 +111,7 @@ const useExotelDevice = (agentId) => {
         };
     }, [agentId]);
 
-    const makeCall = useCallback(async (phoneNumber) => {
+    const makeCall = useCallback(async (phoneNumber, employeeId) => {
         console.log('📞 Triggering Outbound Call API for:', phoneNumber);
         outboundCallPendingRef.current = true;
         setCallStatus('connecting');
@@ -122,16 +122,17 @@ const useExotelDevice = (agentId) => {
             const res = await fetch('/api/calls/trigger-outbound', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerPhone: phoneNumber, mode: 'webrtc' })
+                body: JSON.stringify({ customerPhone: phoneNumber, employeeId, mode: 'webrtc' })
             });
 
             if (res.ok) {
+                const data = await res.json();
                 // We wait for the 'i_new_call' event from the SDK to change to 'ringing'
-                return true;
+                return data;
             } else {
                 outboundCallPendingRef.current = false;
                 setCallStatus('idle');
-                return false;
+                return null;
             }
         } catch (err) {
             outboundCallPendingRef.current = false;

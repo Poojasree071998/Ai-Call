@@ -281,30 +281,15 @@ const EmployeeDashboard = () => {
       
       console.log(`🚀 [EXOTEL] Triggering outbound bridge to: ${finalNumber}`);
       
-      const res = await fetch('/api/calls/trigger-outbound', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          customerPhone: finalNumber,
-          employeeId: currentUser?.id
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // Trigger the real browser call via Exotel
-        const callStarted = await makeCall(finalNumber);
-        if (callStarted) {
-          setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
-          setDialNumber('');
-          addToast('📞 Dialing customer from browser (Exotel)...', 'success');
-        } else {
-          // If browser calling fails, fallback to bridging or show error
-          addToast('❌ Browser audio failed. Please check mic permissions.', 'error');
-        }
+      // Trigger the real browser call via Exotel which automatically calls our backend API
+      const data = await makeCall(finalNumber, currentUser?.id);
+      
+      if (data && data.success) {
+        setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
+        setDialNumber('');
+        addToast('📞 Dialing customer from browser (Exotel)...', 'success');
       } else {
-        addToast(`❌ Dial Failed: ${data.error || 'Unknown error'}`, 'error');
+        addToast('❌ Browser audio failed or Dial Failed.', 'error');
       }
     } catch (err) {
       console.error('Dial Error:', err);
