@@ -101,21 +101,29 @@ const Dialpad = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="dialpad-actions">
+      <div className="dialpad-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
         <button 
           className="btn-dialpad-call" 
           onClick={handleManualCall} 
           disabled={!dialNumber || isLoading || isCalling || !deviceReady}
+          title={!deviceReady ? "Waiting for Twilio to connect (Microphone permission needed)" : "Call Customer"}
         >
           {isLoading ? (
             <span className="loading-spinner-sm"></span>
           ) : (
             <>
               <Phone className="call-icon" size={20} fill="currentColor" />
-              <span>Call Now</span>
+              <span>{!deviceReady ? "Twilio Not Ready" : "Call Now"}</span>
             </>
           )}
         </button>
+        
+        {!deviceReady && (
+          <div style={{ color: '#ff4b2b', fontSize: '0.8rem', textAlign: 'center' }}>
+            ⚠️ Cannot call: Browser Audio not connected. <br/>
+            Check microphone permissions or refresh the page.
+          </div>
+        )}
       </div>
 
       {dialNumber && !isLoading && !isCalling && (
