@@ -52,11 +52,21 @@ exports.generateToken = (req, res) => {
  *
  * TWO-WAY AUDIO is automatic — WebRTC in browser ↔ Twilio ↔ PSTN ↔ customer phone.
  */
-exports.handleVoiceWebhook = (req, res) => {
-  const { To, From, Direction } = req.body || req.query;
+exports.handleVoiceWebhook = async (req, res) => {
+  const { To, From, Direction, callId, CallSid } = req.body || req.query;
   const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
   
-  console.log(`📞 [VOICE WEBHOOK] Call Request: From=${From}, To=${To}, Direction=${Direction}`);
+  console.log(`📞 [VOICE WEBHOOK] Call Request: From=${From}, To=${To}, Direction=${Direction}, callId=${callId}, CallSid=${CallSid}`);
+
+  // 1. Link the DB record to the real Twilio CallSid if this is an outbound call from browser
+  if (callId && CallSid) {
+    try {
+      await Call.findByIdAndUpdate(callId, { twilioSid: CallSid });
+      console.log(`✅ [VOICE] Linked DB record ${callId} to Twilio Sid ${CallSid}`);
+    } catch (err) {
+      console.error(`❌ [VOICE] Failed to link call record: ${err.message}`);
+    }
+  }
 
   const twiml = new twilio.twiml.VoiceResponse();
 
@@ -82,6 +92,7 @@ exports.handleVoiceWebhook = (req, res) => {
     });
     // Route to the browser client. 
     // We use 'employee_default' as a fallback, or we could use a specific ID if passed.
+    // Tip: In production, you'd look up which employee is available or assigned.
     dial.client('employee_default'); 
   }
 

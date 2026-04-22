@@ -109,55 +109,49 @@ const useTwilioDevice = (userId) => {
   }, [userId]);
 
   // ─── Make an outbound call ─────────────────────────────────────────────────
-  const makeCall = useCallback(async (toNumber) => {
-    // Wait up to 6 seconds for the device to become ready
+  const makeCall = useCallback(async (toNumber, employeeId) => {
     if (!deviceRef.current) {
-      console.warn('⚠️  [TWILIO] Device not initialised — Twilio keys may be missing.');
-      return null;
-    }
-
-    if (!deviceReady) {
-      console.log('⏳ [TWILIO] Device not yet registered — waiting up to 6s...');
-      const ready = await new Promise((resolve) => {
-        let waited = 0;
-        const check = setInterval(() => {
-          waited += 200;
-          if (deviceRef.current?.state === 'registered') {
-            clearInterval(check);
-            resolve(true);
-          } else if (waited >= 6000) {
-            clearInterval(check);
-            resolve(false);
-          }
-        }, 200);
-      });
-      if (!ready) {
-        console.warn('❌ [TWILIO] Device registration timed out.');
-        return null;
-      }
+      console.warn('⚠️  [TWILIO] Device not initialised.');
+      return { success: false, error: 'Device not ready' };
     }
 
     try {
+      console.log(`📞 [TWILIO] Registering call in DB for: ${toNumber}`);
+      const res = await fetch('/api/calls/trigger-outbound', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerPhone: toNumber, employeeId, mode: 'browser' })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return { success: false, error: errorData.error || 'Backend failed' };
+      }
+
+      const data = await res.json();
       console.log(`📞 [TWILIO] Dialling: ${toNumber}`);
       setCallStatus('connecting');
 
       const call = await deviceRef.current.connect({
-        params: { To: toNumber }
+        params: { 
+          To: toNumber,
+          callId: data.id // Link the DB record ID
+        }
       });
 
       connectionRef.current = call;
 
       call.on('ringing',     () => { console.log('🔔 [TWILIO] Ringing...'); setCallStatus('ringing'); });
-      call.on('accept',      () => { console.log('✅ [TWILIO] Call accepted — two-way audio live!'); setCallStatus('in-call'); setIsMuted(false); });
+      call.on('accept',      () => { console.log('✅ [TWILIO] Call accepted!'); setCallStatus('in-call'); setIsMuted(false); });
       call.on('disconnect',  () => { console.log('📴 [TWILIO] Call ended.'); setCallStatus('ended'); connectionRef.current = null; });
       call.on('cancel',      () => { console.log('❌ [TWILIO] Call cancelled.'); setCallStatus('idle'); connectionRef.current = null; });
       call.on('error',   (e) => { console.error('❌ [TWILIO] Call error:', e.message); setCallStatus('error'); });
 
-      return call;
+      return { success: true, id: data.id, connection: call };
     } catch (err) {
       console.error('❌ [TWILIO] makeCall failed:', err.message);
       setCallStatus('error');
-      return null;
+      return { success: false, error: err.message };
     }
   }, [deviceReady]);
 

@@ -10,7 +10,7 @@ import TransferModal from '../components/employee/TransferModal';
 import Dialpad from '../components/employee/Dialpad';
 import Toast from '../components/common/Toast';
 import { io } from 'socket.io-client';
-import useExotelDevice from '../services/useExotelDevice';
+import useTwilioDevice from '../services/useTwilioDevice';
 import useRingtone from '../services/useRingtone';
 
 const EmployeeDashboard = () => {
@@ -27,7 +27,7 @@ const EmployeeDashboard = () => {
   const [dialNumber, setDialNumber] = useState('');
   const [sentiment, setSentiment] = useState(50);
   const [suggestions, setSuggestions] = useState([]);
-  const [deviceStatus, setDeviceStatus] = useState('Exotel Bridging Ready');
+  const [deviceStatus, setDeviceStatus] = useState('Twilio Browser Ready');
   const [showInboundPopup, setShowInboundPopup] = useState(null);
   const [seconds, setSeconds] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
@@ -40,7 +40,7 @@ const EmployeeDashboard = () => {
   // Notification beep for new queue items
   const notifyAudioRef = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'));
 
-  // Initialize Exotel Device for Browser Audio
+  // Initialize Twilio Device for Browser Audio
   const { 
     deviceReady, 
     callStatus, 
@@ -50,35 +50,23 @@ const EmployeeDashboard = () => {
     rejectCall, 
     toggleMute, 
     isMuted,
-    setCallStatus
-  } = useExotelDevice(currentUser?.id);
+    isConfigured
+  } = useTwilioDevice(currentUser?.id);
 
-  // Track whether current call is a real Exotel call or demo mode
-  const isExotelCallRef = useRef(false);
-
-  // Sync UI state with Exotel Call Status
+  // Sync UI state with Twilio Call Status
   useEffect(() => {
     if (callStatus === 'in-call' || callStatus === 'connecting' || callStatus === 'ringing') {
-      isExotelCallRef.current = true;
       setIsCalling(true);
       setDeviceStatus(
         callStatus === 'in-call' ? '🟢 Two-Way Audio Live' : 
         callStatus === 'ringing' ? '📳 Ringing Customer...' : '⏳ Connecting...'
       );
-      if (callStatus === 'ringing' && !showInboundPopup && !activeCall) {
-        setShowInboundPopup({
-          id: 'exotel_' + Date.now(),
-          from: 'Incoming Call',
-          department: 'Direct Inbound'
-        });
-      }
-    } else if ((callStatus === 'idle' || callStatus === 'ended') && isExotelCallRef.current) {
-      isExotelCallRef.current = false;
+    } else if (callStatus === 'idle' || callStatus === 'ended' || callStatus === 'error') {
       setIsCalling(false);
       setActiveCall(null);
-      setDeviceStatus('Exotel Browser Ready');
+      setDeviceStatus(isConfigured ? '🟢 Twilio Browser Ready' : '🔴 Twilio Not Configured');
     }
-  }, [callStatus]);
+  }, [callStatus, isConfigured]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -157,7 +145,7 @@ const EmployeeDashboard = () => {
         setIsCalling(false);
         setCallStatus('idle');
         setActiveCall(null);
-        setDeviceStatus('Exotel Browser Ready');
+        setDeviceStatus(isConfigured ? '🟢 Twilio Browser Ready' : '🔴 Twilio Not Configured');
         addToast(`📴 Call ${data.status}`, 'info');
       }
     });
@@ -279,15 +267,15 @@ const EmployeeDashboard = () => {
       let finalNumber = dialNumber.trim();
       if (finalNumber.length === 10 && !finalNumber.startsWith('+')) finalNumber = '+91' + finalNumber;
       
-      console.log(`🚀 [EXOTEL] Triggering outbound bridge to: ${finalNumber}`);
+      console.log(`🚀 [TWILIO] Triggering outbound call to: ${finalNumber}`);
       
-      // Trigger the real browser call via Exotel which automatically calls our backend API
+      // Trigger the real browser call via Twilio
       const data = await makeCall(finalNumber, currentUser?.id);
       
       if (data && data.success) {
         setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
         setDialNumber('');
-        addToast('📞 Dialing customer from browser (Exotel)...', 'success');
+        addToast('📞 Dialing customer from browser (Twilio)...', 'success');
       } else {
         addToast(`❌ Dial Failed: ${data?.error || 'Browser audio failed'}`, 'error');
       }
@@ -344,13 +332,12 @@ const EmployeeDashboard = () => {
 
   const handleEndCall = () => {
     hangUp();
-    isExotelCallRef.current = false;
     ringtone.current.stop();
     setIsCalling(false);
     setActiveCall(null);
     setNotes('');
     setDisposition('Interested');
-    setDeviceStatus('Exotel Browser Ready');
+    setDeviceStatus(isConfigured ? '🟢 Twilio Browser Ready' : '🔴 Twilio Not Configured');
     updateStatus('Free');
   };
 
