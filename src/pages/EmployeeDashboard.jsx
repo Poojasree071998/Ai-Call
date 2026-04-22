@@ -287,7 +287,7 @@ const EmployeeDashboard = () => {
       if (data && data.success) {
         setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
         setDialNumber('');
-        addToast('📞 Dialing customer from browser (Exotel)...', 'success');
+        addToast('📞 Ringing your mobile phone... Please answer to connect to customer!', 'success');
       } else {
         addToast(`❌ Dial Failed: ${data?.error || 'Browser audio failed'}`, 'error');
       }
