@@ -262,12 +262,7 @@ exports.triggerOutboundCall = async (req, res) => {
     
     // If frontend requests WebRTC, dial the SIP endpoint instead of the mobile phone
     if (req.body.mode === 'webrtc' && process.env.EXOTEL_SIP_USERNAME) {
-      let sipUser = process.env.EXOTEL_SIP_USERNAME.trim();
-      // Exotel requires 'sip:' prefix to correctly route to a SIP endpoint instead of PSTN
-      if (!sipUser.startsWith('sip:')) {
-        sipUser = `sip:${sipUser}`;
-      }
-      employeePhone = sipUser; 
+      employeePhone = process.env.EXOTEL_SIP_USERNAME.trim(); 
       console.log(`🚀 [WEBRTC MODE] Dialing SIP Endpoint: ${employeePhone}`);
     }
 

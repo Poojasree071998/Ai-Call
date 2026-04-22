@@ -122,7 +122,7 @@ const useExotelDevice = (agentId) => {
             const res = await fetch('/api/calls/trigger-outbound', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerPhone: phoneNumber, employeeId, mode: 'mobile' })
+                body: JSON.stringify({ customerPhone: phoneNumber, employeeId, mode: 'webrtc' })
             });
 
             if (res.ok) {
