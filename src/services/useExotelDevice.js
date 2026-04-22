@@ -11,6 +11,7 @@ const useExotelDevice = (agentId) => {
     
     const exotelClientRef = useRef(null);
     const activeCallRef = useRef(null);
+    const outboundCallPendingRef = useRef(false);
 
     useEffect(() => {
         if (!agentId) return;
@@ -57,7 +58,15 @@ const useExotelDevice = (agentId) => {
                         console.log('📥 Incoming Call via WebRTC');
                         // Exotel WebRTC creates a Call object automatically
                         activeCallRef.current = client.getCall();
-                        setCallStatus('ringing');
+                        
+                        if (outboundCallPendingRef.current) {
+                            console.log('🚀 Auto-answering outbound bridge call...');
+                            activeCallRef.current.Answer();
+                            setCallStatus('in-call');
+                            outboundCallPendingRef.current = false;
+                        } else {
+                            setCallStatus('ringing');
+                        }
                     } else if (e === 'ringing') {
                         setCallStatus('ringing');
                     } else if (e === 'connected') {
@@ -104,6 +113,7 @@ const useExotelDevice = (agentId) => {
 
     const makeCall = useCallback(async (phoneNumber) => {
         console.log('📞 Triggering Outbound Call API for:', phoneNumber);
+        outboundCallPendingRef.current = true;
         setCallStatus('connecting');
         
         try {
@@ -119,10 +129,12 @@ const useExotelDevice = (agentId) => {
                 // We wait for the 'i_new_call' event from the SDK to change to 'ringing'
                 return true;
             } else {
+                outboundCallPendingRef.current = false;
                 setCallStatus('idle');
                 return false;
             }
         } catch (err) {
+            outboundCallPendingRef.current = false;
             setCallStatus('idle');
             return false;
         }
