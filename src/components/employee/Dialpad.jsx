@@ -10,6 +10,7 @@ const Dialpad = ({
   isCalling,
   activeCall,
   deviceStatus,
+  deviceReady,
   callDuration,
   handleEndCall
 }) => {
@@ -99,7 +100,7 @@ const Dialpad = ({
         <button 
           className="btn-dialpad-call" 
           onClick={handleManualCall} 
-          disabled={!dialNumber || isLoading || isCalling}
+          disabled={!dialNumber || isLoading || isCalling || !deviceReady}
         >
           {isLoading ? (
             <span className="loading-spinner-sm"></span>

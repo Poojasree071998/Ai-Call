@@ -64,9 +64,12 @@ const EmployeeDashboard = () => {
     } else if (callStatus === 'idle' || callStatus === 'ended' || callStatus === 'error') {
       setIsCalling(false);
       setActiveCall(null);
-      setDeviceStatus(isConfigured ? '🟢 Twilio Browser Ready' : '🔴 Twilio Not Configured');
+      setDeviceStatus(
+        !isConfigured ? '🔴 Twilio Not Configured' :
+        deviceReady ? '🟢 Twilio Browser Ready' : '⏳ Initialising Twilio...'
+      );
     }
-  }, [callStatus, isConfigured]);
+  }, [callStatus, isConfigured, deviceReady]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -481,6 +484,7 @@ const EmployeeDashboard = () => {
                         isCalling={isCalling}
                         activeCall={activeCall}
                         deviceStatus={deviceStatus}
+                        deviceReady={deviceReady}
                         callDuration={formatTime(seconds)}
                         handleEndCall={handleEndCall}
                       />

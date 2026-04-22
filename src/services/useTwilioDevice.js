@@ -34,13 +34,24 @@ const useTwilioDevice = (userId) => {
 
     const init = async () => {
       try {
-        console.log('🔑 [TWILIO] Fetching browser token...');
+        if (!userId) {
+          console.warn('⚠️ [TWILIO] No userId provided for initialisation.');
+          return;
+        }
+
+        console.log(`🔑 [TWILIO] Fetching browser token for identity: employee_${userId}...`);
         const res = await fetch(`/api/voice/token?id=${userId}`);
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`HTTP ${res.status}: ${errorText || 'Failed to fetch token'}`);
+        }
+
         const data = await res.json();
 
         // Graceful degradation — if Twilio keys aren't set up yet
-        if (!res.ok || data.configured === false) {
-          console.warn('⚠️  [TWILIO] Browser audio not configured. Demo mode active.');
+        if (data.configured === false) {
+          console.warn('⚠️  [TWILIO] Browser audio not configured on server. Demo mode active.');
           setIsConfigured(false);
           setCallStatus('unconfigured');
           return;
@@ -72,9 +83,10 @@ const useTwilioDevice = (userId) => {
         });
 
         device.on('error', (err) => {
-          console.error('❌ [TWILIO] Device error:', err.message);
-          setDeviceError(err.message);
+          console.error('❌ [TWILIO] Device error:', err.message, err.code);
+          setDeviceError(`${err.message} (Code: ${err.code || 'unknown'})`);
           setCallStatus('error');
+          setDeviceReady(false);
         });
 
         // Incoming call to browser (customer calls in)
@@ -89,12 +101,14 @@ const useTwilioDevice = (userId) => {
         });
 
         // Register so it can receive calls too
+        console.log('📡 [TWILIO] Registering device...');
         await device.register();
 
       } catch (err) {
         console.error('❌ [TWILIO] Init failed:', err.message);
-        setDeviceError(err.message);
-        setIsConfigured(false);
+        setDeviceError(`Init failed: ${err.message}`);
+        setCallStatus('error');
+        setDeviceReady(false);
       }
     };
 
