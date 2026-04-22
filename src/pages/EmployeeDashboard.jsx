@@ -289,7 +289,7 @@ const EmployeeDashboard = () => {
         setDialNumber('');
         addToast('📞 Dialing customer from browser (Exotel)...', 'success');
       } else {
-        addToast('❌ Browser audio failed or Dial Failed.', 'error');
+        addToast(`❌ Dial Failed: ${data?.error || 'Browser audio failed'}`, 'error');
       }
     } catch (err) {
       console.error('Dial Error:', err);

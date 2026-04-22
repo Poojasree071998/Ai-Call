@@ -127,17 +127,17 @@ const useExotelDevice = (agentId) => {
 
             if (res.ok) {
                 const data = await res.json();
-                // We wait for the 'i_new_call' event from the SDK to change to 'ringing'
                 return data;
             } else {
+                const errorData = await res.json();
                 outboundCallPendingRef.current = false;
                 setCallStatus('idle');
-                return null;
+                return { success: false, error: errorData.error || 'Unknown Exotel Error' };
             }
         } catch (err) {
             outboundCallPendingRef.current = false;
             setCallStatus('idle');
-            return false;
+            return { success: false, error: err.message };
         }
     }, []);
 

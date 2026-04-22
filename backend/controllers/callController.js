@@ -303,8 +303,12 @@ exports.triggerOutboundCall = async (req, res) => {
 
     res.json({ success: true, callSid: callSid, id: newCall._id });
   } catch (err) {
-    console.error(`❌ [OUTBOUND ERROR] ${err.message}`);
-    res.status(500).json({ error: err.message });
+    let errorMessage = err.message;
+    if (err.response && err.response.data && err.response.data.RestException) {
+        errorMessage = err.response.data.RestException.Message;
+    }
+    console.error(`❌ [OUTBOUND ERROR] ${errorMessage}`);
+    res.status(500).json({ error: errorMessage });
   }
 };
 
