@@ -68,6 +68,11 @@ const Dialpad = ({
           type="text" 
           value={dialNumber} 
           onChange={(e) => setDialNumber(e.target.value.replace(/[^0-9*#+]/g, ''))} 
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && dialNumber && deviceReady) {
+              handleManualCall();
+            }
+          }}
           placeholder="Enter Number..." 
           className="dialpad-input"
           maxLength={15}
