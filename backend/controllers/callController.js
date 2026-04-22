@@ -219,6 +219,7 @@ exports.triggerOutboundCall = async (req, res) => {
     // Exotel recommends using E.164 format (+91...) so we do NOT strip the '+'
     const customerPhoneClean = customerPhone.trim();
     const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     let baseUrl = (process.env.BASE_URL || '').trim();
     if (!baseUrl || baseUrl.includes('ngrok')) {
       baseUrl = `${protocol}://${host}`;
