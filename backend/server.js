@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const dns = require('dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 const express = require('express');
@@ -159,8 +160,7 @@ app.use('/api/auth',   authRoutes);
 app.use('/api/voice',  voiceRoutes);
 
 // Static Files & Routing
-const path = require('path');
-const distPath = path.resolve(process.cwd(), 'dist');
+const distPath = path.resolve(__dirname, '../dist');
 
 // Serve Static Frontend Files
 app.use(express.static(distPath));

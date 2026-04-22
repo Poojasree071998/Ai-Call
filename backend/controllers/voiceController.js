@@ -14,11 +14,15 @@ exports.generateToken = (req, res) => {
   const appSid    = process.env.TWILIO_APP_SID;
   const identity  = 'employee_' + (req.query.id || 'default');
 
+  // Runtime diagnostic — visible in server logs
+  console.log(`🔍 [VOICE] Env check → SID=${accountSid?.slice(0,6)}... KEY=${apiKey?.slice(0,6)}... APP=${appSid?.slice(0,6)}...`);
+
   // Detect missing OR placeholder credentials (e.g. ACxxxxxxxxx)
   const isPlaceholder = (v) => !v || v.includes('xxx') || v.includes('XXX') || v.length < 15;
 
   if (isPlaceholder(accountSid) || isPlaceholder(apiKey) || isPlaceholder(apiSecret) || isPlaceholder(appSid)) {
     console.warn('⚠️  [VOICE] Twilio credentials not configured (or still placeholders). Browser audio disabled.');
+    console.warn(`   SID: ${accountSid} | KEY: ${apiKey} | SECRET: ${apiSecret ? '[SET]' : 'MISSING'} | APP: ${appSid}`);
     return res.status(503).json({
       error: 'Browser audio not configured. Add TWILIO_* keys to .env to enable.',
       configured: false
