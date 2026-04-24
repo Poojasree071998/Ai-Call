@@ -105,23 +105,23 @@ const Dialpad = ({
         <button 
           className="btn-dialpad-call" 
           onClick={handleManualCall} 
-          disabled={!dialNumber || isLoading || isCalling || !deviceReady}
-          title={!deviceReady ? "Waiting for Twilio to connect (Microphone permission needed)" : "Call Customer"}
+          disabled={!dialNumber || isLoading || isCalling}
+          title={!deviceReady ? "Call Customer via Mobile (Exotel)" : "Call Customer via Browser (Twilio)"}
         >
           {isLoading ? (
             <span className="loading-spinner-sm"></span>
           ) : (
             <>
               <Phone className="call-icon" size={20} fill="currentColor" />
-              <span>{!deviceReady ? "Twilio Not Ready" : "Call Now"}</span>
+              <span>Call Now</span>
             </>
           )}
         </button>
         
         {!deviceReady && (
           <div style={{ color: '#ff4b2b', fontSize: '0.8rem', textAlign: 'center' }}>
-            ⚠️ Cannot call: Browser Audio not connected. <br/>
-            Check microphone permissions or refresh the page.
+            ⚠️ Browser Audio Disconnected. <br/>
+            Calls will route to your Mobile Phone.
           </div>
         )}
       </div>

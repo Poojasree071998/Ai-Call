@@ -137,7 +137,6 @@ const EmployeeDashboard = () => {
     socket.on('call-live', (data) => {
       console.log('📡 [SOCKET] Call is now LIVE:', data);
       setIsCalling(true);
-      setCallStatus('in-call');
       setDeviceStatus(data.status || '🟢 Two-Way Audio Live');
       addToast('🟢 Call Connected!', 'success');
     });
@@ -146,7 +145,6 @@ const EmployeeDashboard = () => {
       console.log('📡 [SOCKET] Call status updated:', data);
       if (data.status === 'Completed' || data.status === 'Missed') {
         setIsCalling(false);
-        setCallStatus('idle');
         setActiveCall(null);
         setDeviceStatus(isConfigured ? '🟢 Twilio Browser Ready' : '🔴 Twilio Not Configured');
         addToast(`📴 Call ${data.status}`, 'info');
@@ -270,17 +268,38 @@ const EmployeeDashboard = () => {
       let finalNumber = dialNumber.trim();
       if (finalNumber.length === 10 && !finalNumber.startsWith('+')) finalNumber = '+91' + finalNumber;
       
-      console.log(`🚀 [TWILIO] Triggering outbound call to: ${finalNumber}`);
-      
-      // Trigger the real browser call via Twilio
-      const data = await makeCall(finalNumber, currentUser?.id);
-      
-      if (data && data.success) {
-        setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
-        setDialNumber('');
-        addToast('📞 Dialing customer from browser (Twilio)...', 'success');
-      } else {
-        addToast(`❌ Dial Failed: ${data?.error || 'Browser audio failed'}`, 'error');
+      // If Twilio is fully configured and ready, use browser calling
+      if (isConfigured && deviceReady) {
+        console.log(`🚀 [TWILIO MODE] Triggering outbound call to: ${finalNumber}`);
+        const data = await makeCall(finalNumber, currentUser?.id);
+        
+        if (data && data.success) {
+          setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
+          setDialNumber('');
+          addToast('📞 Dialing customer from browser (Twilio)...', 'success');
+        } else {
+          addToast(`❌ Dial Failed: ${data?.error || 'Browser audio failed'}`, 'error');
+        }
+      } 
+      // Fallback to Exotel Phone Bridging
+      else {
+        console.log(`🚀 [EXOTEL MODE] Triggering outbound bridge call to: ${finalNumber}`);
+        const res = await fetch('/api/calls/trigger-outbound', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerPhone: finalNumber, employeeId: currentUser?.id, mode: 'exotel' })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setActiveCall({ _id: data.id, from: finalNumber, status: 'In-Progress' });
+          setIsCalling(true);
+          setDialNumber('');
+          addToast('📞 Exotel is calling your phone. Pick up to connect!', 'success');
+        } else {
+          const errorData = await res.json();
+          addToast(`❌ Dial Failed: ${errorData.error || 'Exotel bridge failed'}`, 'error');
+        }
       }
     } catch (err) {
       console.error('Dial Error:', err);
